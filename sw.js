@@ -1,6 +1,6 @@
 // Gör att appen startar även utan mobiltäckning. Nätet först (så att en ny version slår
 // igenom direkt), sparad kopia om nätet inte svarar. Bluetooth påverkas inte av detta.
-const CACHE = 'elcentral-v1';
+const CACHE = 'elcentral-v2';
 const FILER = ['./', 'index.html', 'manifest.webmanifest', 'ikon.svg', 'ikon-192.png', 'ikon-512.png'];
 
 self.addEventListener('install', e => {
