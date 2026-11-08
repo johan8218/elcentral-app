@@ -1,0 +1,812 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#10171D"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="ikon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="ikon-192.png"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Elcentral-appen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: mörk hyttapp, en kolumn i telefonbredd, fast flikrad nederst. Samma färgvärld som displaypanelens skisser. */
+:root{
+  --bg:#10171D; --surface:#1A242C; --raised:#22303A; --line:#2C3B46; --ink:#E8EEF2; --muted:#93A3AF;
+  --accent:#F2B300; --accent-ink:#1A1300;
+  --ok:#3FBF7F; --warn:#F2B300; --bad:#FF6B4A; --info:#5AA9FF; --off:#55636E;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.app{max-width:520px;margin:0 auto;padding-inline:16px;padding-block:0 calc(96px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:14px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line)}
+.brand{display:flex;flex-direction:column;min-width:0;flex:0 0 auto}
+.brand b{font-family:var(--display);font-size:26px;font-weight:700;letter-spacing:.01em;line-height:1}
+.brand small{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:600;background:var(--raised);white-space:nowrap}
+.chip.sim{background:#3A2F0A;color:var(--accent)}
+.chip.ing{background:#12263A;color:var(--info)}
+.chip.ok{background:#123222;color:var(--ok)}
+.chip.lost{background:#3A1A12;color:var(--bad)}
+.chip.ing .dot,.chip.lost .dot{animation:puls 1s ease-in-out infinite}
+@keyframes puls{50%{opacity:.25}}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.cbtn{min-height:40px;border-radius:999px;border:1px solid var(--line);background:var(--raised);padding:0 14px;font-size:14px;font-weight:600;white-space:nowrap}
+.cbtn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.nosup{display:inline-block;font-family:var(--body);font-size:11px;font-weight:700;letter-spacing:.02em;border-radius:6px;padding:2px 7px;background:#3A2F0A;color:var(--accent);white-space:nowrap;vertical-align:middle}
+button:disabled{opacity:.45;cursor:not-allowed}
+.volt{font-family:var(--mono);font-variant-numeric:tabular-nums}
+h2{font-family:var(--display);font-size:22px;font-weight:600;margin:0;letter-spacing:.01em}
+.sec{display:flex;flex-direction:column;gap:10px}
+.sechead{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.sechead span{color:var(--muted);font-size:14px}
+/* protection banner */
+.banner{border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line)}
+.banner .big{font-family:var(--display);font-size:20px;font-weight:600}
+.banner p{margin:0;color:var(--muted);font-size:14px}
+.banner.warn{border-color:#5a4708;background:#241E09}
+.banner.bad{border-color:#6b2a1d;background:#2A1510}
+.banner.info{border-color:#1f4166;background:#101E2C}
+.banner .ico{width:36px;height:36px;flex:none;border-radius:10px;display:grid;place-items:center;background:var(--raised)}
+/* mode switch */
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border-radius:12px;padding:4px;gap:4px;border:1px solid var(--line)}
+.seg button{border:0;background:transparent;border-radius:9px;min-height:48px;font-family:var(--display);font-size:19px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+/* outputs */
+.outs{display:flex;flex-direction:column;gap:10px}
+.out{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+.lamp{width:44px;height:44px;border-radius:50%;background:#0B1116;border:2px solid var(--off);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:15px;color:var(--muted);transition:background .08s,border-color .08s,box-shadow .08s}
+.lamp.lit{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:0 0 16px rgba(242,179,0,.45)}
+.lamp.shed{border-color:var(--bad);color:var(--bad)}
+.lamp.wait{border-color:var(--info);color:var(--info)}
+.out .info{min-width:0;display:flex;flex-direction:column;gap:3px}
+.out .name{font-weight:600;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.out .meta{color:var(--muted);font-size:13px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.state{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:6px;padding:2px 7px;background:var(--raised);color:var(--muted)}
+.state.on{background:#3A2F0A;color:var(--accent)}
+.state.shed{background:#3A1A12;color:var(--bad)}
+.state.wait{background:#12263A;color:var(--info)}
+.state.lock{background:#2a2f35;color:#c3ccd3}
+.tbtn{min-width:76px;min-height:52px;border-radius:12px;border:2px solid var(--line);background:var(--raised);font-family:var(--display);font-size:18px;font-weight:600}
+.tbtn[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+/* status */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tile .k{color:var(--muted);font-size:12px;letter-spacing:.07em;text-transform:uppercase;font-weight:600}
+.tile .v{font-family:var(--display);font-size:24px;font-weight:600}
+.tile .v.mono{font-family:var(--mono);font-size:22px}
+.tile.wide{grid-column:1/-1}
+.bar{height:8px;border-radius:4px;background:#0B1116;position:relative;overflow:hidden;margin-top:6px}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--ok);border-radius:4px}
+.ticks{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;font-family:var(--mono);margin-top:3px}
+.inputs{display:flex;flex-direction:column}
+.inrow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);gap:10px}
+.inrow:last-child{border-bottom:0}
+.pill{font-size:13px;font-weight:700;border-radius:999px;padding:3px 10px;background:var(--raised);color:var(--muted)}
+.pill.on{background:#123222;color:var(--ok)}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.log li{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px;color:var(--muted)}
+.log li b{color:var(--ink);font-weight:500}
+.log time{font-family:var(--mono);font-size:13px}
+/* installer */
+.pinwrap{display:flex;flex-direction:column;align-items:center;gap:16px;padding-block:20px}
+.pindots{display:flex;gap:14px}
+.pindots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--muted)}
+.pindots i.f{background:var(--accent);border-color:var(--accent)}
+.pad{display:grid;grid-template-columns:repeat(3,76px);gap:10px}
+.pad button{height:64px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-family:var(--display);font-size:26px;font-weight:600}
+.hint{color:var(--muted);font-size:14px;text-align:center;margin:0}
+.err{color:var(--bad);font-size:14px;min-height:20px;margin:0}
+details.cfg{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+details.cfg summary{list-style:none;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
+details.cfg summary::-webkit-details-marker{display:none}
+details.cfg summary b{font-size:17px}
+details.cfg summary span{color:var(--muted);font-size:13px;text-align:right}
+.form{padding:0 14px 14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label{font-size:13px;color:var(--muted);font-weight:600}
+.field input[type=text],.field input[type=number],.field select{background:#0B1116;border:1px solid var(--line);border-radius:10px;min-height:46px;padding:0 10px;width:100%}
+.check{display:flex;flex-direction:row;align-items:center;gap:10px;min-height:46px;font-size:15px}
+.check input{width:24px;height:24px;accent-color:var(--accent)}
+.note{color:var(--muted);font-size:13px;margin:0}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap}
+.btn{min-height:48px;border-radius:12px;border:1px solid var(--line);background:var(--raised);padding:0 16px;font-weight:600}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.dan{color:var(--bad);border-color:#6b2a1d}
+/* nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#0B1116;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .in{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs button{border:0;background:transparent;min-height:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-size:13px;font-weight:600}
+nav.tabs button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var(--accent)}
+nav.tabs svg{width:24px;height:24px}
+/* sim sheet */
+.sheet{background:var(--surface);border:1px dashed #5a4708;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.sheet .row{display:flex;gap:8px;flex-wrap:wrap}
+.sheet .row .btn{min-height:40px;padding:0 12px;font-size:14px}
+input[type=range]{width:100%;accent-color:var(--accent);height:32px}
+.tog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.tog button{min-height:48px;border-radius:12px;border:1px solid var(--line);background:var(--raised);font-weight:600;display:flex;justify-content:space-between;align-items:center;padding:0 12px}
+.tog button[aria-pressed="true"]{border-color:var(--ok);color:var(--ok)}
+.bench{grid-column:1/-1;display:flex;align-items:center;gap:10px;border-top:1px dashed var(--line);padding-top:10px}
+.bulb{width:30px;height:30px;border-radius:50%;background:#0B1116;border:2px solid var(--off);flex:none}
+.bulb.lit{background:#FFE08A;border-color:#FFD34D;box-shadow:0 0 18px 4px rgba(255,211,77,.55)}
+.bench .lbl{color:var(--muted);font-size:13px;flex:1;min-width:0}
+.bench button{min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--raised);padding:0 12px;font-weight:600;font-size:14px;white-space:nowrap}
+.bench button[aria-pressed="true"]{border-color:var(--ok);color:var(--ok)}
+.bench button.down,.hold.down{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.press{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.hold{min-height:64px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.warnline{color:var(--bad);font-size:13px;font-weight:600}
+.pill.bad{background:#3A1A12;color:var(--bad)}
+.subh{font-family:var(--display);font-size:17px;font-weight:600;margin:6px 0 0;color:var(--ink);border-top:1px solid var(--line);padding-top:12px}
+.subh small{font-family:var(--body);font-size:12px;color:var(--muted);font-weight:400}
+.tplrow,.testrow{flex-direction:row!important;align-items:center;gap:8px}
+.tplrow span,.testrow>span:first-child{flex:1;min-width:0}
+.testrow small{color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+textarea{background:#0B1116;border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%;font-family:var(--mono);font-size:12px;color:var(--ink)}
+.field input[type=time]{background:#0B1116;border:1px solid var(--line);border-radius:10px;min-height:46px;padding:0 10px;width:100%}
+.simrow{display:grid;grid-template-columns:minmax(0,1fr) 72px auto auto;gap:8px;align-items:center;font-size:14px}
+.simrow input{background:#0B1116;border:1px solid var(--line);border-radius:8px;min-height:40px;padding:0 8px;width:100%}
+.simrow .unit{color:var(--muted)}
+.simrow button{min-height:40px;border-radius:10px;border:1px solid var(--line);background:var(--raised);padding:0 10px;font-weight:600;font-size:14px}
+.simrow button[aria-pressed="true"]{border-color:var(--bad);color:var(--bad)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(82px + env(safe-area-inset-bottom,0px));background:var(--raised);border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-size:14px;z-index:7;max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion:reduce){.lamp{transition:none}.chip .dot{animation:none!important}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><b>Elcentral</b><small id="hdrsub">Arbetsmaskin · 24 V</small></div>
+    <div class="chips">
+      <span class="chip sim" id="conn" role="status" title="Ingen central ansluten. Appen kör mot en simulator."><span class="dot"></span><span id="conntxt">Simulator</span></span>
+      <span class="chip volt" id="hdrv">25,2 V</span>
+      <button class="cbtn pri" id="connbtn">Anslut</button>
+    </div>
+  </header>
+
+  <main id="view"></main>
+</div>
+
+<nav class="tabs" aria-label="Huvudmeny"><div class="in">
+  <button data-tab="out" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 9v6M12 9v6M16 9v6"/></svg>Utgångar</button>
+  <button data-tab="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 10v4M7 10v4M11 10v4"/></svg>Status</button>
+  <button data-tab="sim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Simulator</button>
+  <button data-tab="inst"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Installatör</button>
+</div></nav>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+/* ---------- Konfiguration (motsvarar tabellen i funktioner.ino) ---------- */
+const FUNCS={latch:'Självhållning',const:'Konstant',blink:'Blink',offdelay:'Frånslagsfördröjd'};
+const TRIGS={none:'Bara knapp',kl15:'Kl. 15',dplus:'D+',back:'Backsignal',dark:'Mörkt',btn:'Tryckknapp'};
+const SHORTS={toggle:'Tänd/släck',none:'Ingenting'};
+const LONGS={none:'Ingenting',blink:'Blinka medan den hålls in',toggle:'Tänd/släck'};
+const IGNS={ignore:'Påverkas inte',off:'Släck direkt',delay:'Lys kvar en stund (eftersläckning)'};
+const PROFILES=['Arbetsmaskin','Lastbil','Husbil och husvagn','Stuga'];
+const DEFAULT={
+  profile:'Arbetsmaskin', pin:'1234',
+  outputs:[
+    {id:'U1',name:'Arbetsljus fram',func:'latch',trig:'none',time:0,anti:false,prio:3,cutOn:false,cut:23.6,road:false},
+    {id:'U2',name:'Blixtljus vänster',func:'blink',trig:'kl15',time:0.67,anti:false,prio:5,cutOn:false,cut:23.6,road:true},
+    {id:'U3',name:'Blixtljus höger',func:'blink',trig:'kl15',time:0.67,anti:true,prio:5,cutOn:false,cut:23.6,road:true},
+    {id:'U4',name:'Backljus',func:'offdelay',trig:'back',time:5,anti:false,prio:4,cutOn:false,cut:23.6,road:true},
+    {id:'U5',name:'Laddindikering',func:'blink',trig:'dplus',time:0.5,anti:false,prio:1,cutOn:false,cut:23.6,road:true}
+  ]};
+const KEY='elcentral.app.v1', TKEY='elcentral.mallar.v1';
+const clone=o=>JSON.parse(JSON.stringify(o));
+let cfg=clone(DEFAULT);
+try{const s=localStorage.getItem(KEY); if(s){const p=JSON.parse(s); if(p&&p.outputs&&p.outputs.length===5) cfg=p;}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){}}
+let tpl={};
+try{tpl=JSON.parse(localStorage.getItem(TKEY)||'{}')||{}}catch(e){tpl={}}
+function saveTpl(){try{localStorage.setItem(TKEY,JSON.stringify(tpl))}catch(e){}}
+const num=v=>parseFloat(String(v).replace(',','.'));
+
+/* standardvärden för inställningar som tillkommit (äldre sparade inställningar saknar dem) */
+const btnNo=(o,i)=>o.btn||(i+1);
+const sh=o=>o.short||'toggle', lg=o=>o.long||'none', ig=o=>o.ign||'ignore';
+const igT=o=>o.ignT??120, hT=o=>o.holdT||1, hB=o=>o.holdBlink||0.5;
+const modeName=m=>esc(((cfg.modes||{})[m]||'').trim()||(m==='road'?'Väg':'Arbete'));
+const trigName=(o,i)=>o.trig==='btn'?'Tryckknapp '+btnNo(o,i):TRIGS[o.trig];
+
+/* ---------- Simulerad central ---------- */
+const sim={v:25.2,kl15:true,dplus:false,back:false,dark:false,panel:true,
+  btns:{1:{p:false,t:0,rel:null,id:0},2:{p:false,t:0,rel:null,id:0},3:{p:false,t:0,rel:null,id:0},4:{p:false,t:0,rel:null,id:0}},
+  load:[12.5,1.8,1.8,3.0,0.5], broken:[false,false,false,false,false]};
+const Z=()=>[false,false,false,false,false], N=()=>[0,0,0,0,0];
+const rt={mode:'work',req:N(),imp:Z(),lblink:Z(),cutLow:Z(),latch:Z(),offT:N(),longDone:N(),
+  afterT:N(),afterOn:Z(),prevKl15:true,schT:N(),schLast:['','','','',''],test:Z(),I:N(),badT:N(),warn:['','','','',''],
+  prot:'NORMAL',shed:0,acc:{low:0,shed:0,crit:0,clear:0,rec:0,step:0},phase:0,
+  out:[0,1,2,3,4].map(()=>({st:'AV',lit:false,extra:'',real:false})),
+  log:[]};
+const sys=()=>sim.v>18?24:12, k=()=>sys()/12;
+const fmtV=v=>v.toFixed(1).replace('.',',')+' V';
+const fmtA=a=>a.toFixed(1).replace('.',',')+' A';
+const fmtT=s=>s>=90?Math.ceil(s/60)+' min':Math.ceil(s)+' s';
+function log(t){const d=new Date();rt.log.unshift({t:d.toTimeString().slice(0,8),m:t});rt.log=rt.log.slice(0,14)}
+function setProt(p){if(rt.prot!==p){rt.prot=p;log('Batteriskydd: '+PROT[p].title)}}
+const PROT={
+  NORMAL:{title:'Normal',cls:'',text:'Batteriet mår bra. Alla utgångar får vara på.'},
+  VARNING:{title:'Låg spänning',cls:'warn',text:'Spänningen är låg. Inget har kopplats bort än.'},
+  AVLASTNING:{title:'Avlastning pågår',cls:'bad',text:'Utgångar kopplas bort i prioritetsordning för att spara batteriet.'},
+  KRITISK:{title:'Kritiskt låg spänning',cls:'bad',text:'Alla utgångar är bortkopplade för att maskinen ska kunna starta.'},
+  ATER:{title:'Återinkoppling',cls:'info',text:'Spänningen är tillbaka. Utgångarna kopplas in en prioritet i taget.'}
+};
+const DAYS={all:'Alla dagar',weekdays:'Måndag–fredag'};
+function inWindow(o,now){
+  if(!o.schOn) return false;
+  const [hh,mm]=(o.schTime||'06:30').split(':').map(Number);
+  const dur=(o.schDur??30)*60000;
+  for(const back of [0,1]){ // fönster som började i dag eller i går (över midnatt)
+    const s=new Date(now); s.setDate(s.getDate()-back); s.setHours(hh,mm,0,0);
+    const wd=s.getDay(); if((o.schDays||'all')==='weekdays'&&(wd===0||wd===6)) continue;
+    if(now>=s&&now<s.getTime()+dur) return Math.ceil((s.getTime()+dur-now)/1000);
+  }
+  return false;
+}
+
+function tick(dt){
+  const vb=sim.v/k(); const A=rt.acc;
+  // Batteriskydd (tider förkortade i simulatorn: 3 s i stället för 30 s)
+  A.crit=vb<11.0?A.crit+dt:0;
+  A.shed=vb<11.8?A.shed+dt:0;
+  A.low =vb<12.0?A.low+dt:0;
+  A.clear=vb>12.2?A.clear+dt:0;
+  A.rec =vb>12.8?A.rec+dt:0;
+  if(A.crit>=2){ if(rt.prot!=='KRITISK'){setProt('KRITISK');} rt.shed=5; }
+  else if(rt.prot==='KRITISK'||rt.prot==='AVLASTNING'){
+    if(A.rec>=3){setProt('ATER');A.step=0;}
+    else if(rt.prot==='AVLASTNING'){A.step+=dt; if(A.step>=1.5&&rt.shed<5){rt.shed++;A.step=0;log('Prioritet '+rt.shed+' bortkopplad');}}
+  } else if(rt.prot==='ATER'){
+    if(vb<11.8){setProt('AVLASTNING');A.step=0}
+    else{A.step+=dt; if(A.step>=0.5){A.step=0; if(rt.shed>0){log('Prioritet '+rt.shed+' inkopplad');rt.shed--;} if(rt.shed===0)setProt('NORMAL');}}
+  } else {
+    if(A.shed>=3){setProt('AVLASTNING');rt.shed=1;A.step=0;log('Prioritet 1 bortkopplad');}
+    else if(A.low>=3&&rt.prot==='NORMAL') setProt('VARNING');
+    else if(rt.prot==='VARNING'&&A.clear>=3) setProt('NORMAL');
+  }
+  rt.phase+=dt;
+  const O=cfg.outputs;
+
+  /* --- Tryckknappar: kort och långt tryck styr grupper av utgångar --- */
+  const rels={}; for(const n in sim.btns){const B=sim.btns[n]; if(B.p)B.t+=dt; rels[n]=B.rel; B.rel=null;}
+  const onBtn=(i,n)=>O[i].trig==='btn'&&String(btnNo(O[i],i))===String(n);
+  const isOn=i=>rt.imp[i];
+  for(const n in sim.btns){
+    const B=sim.btns[n], rel=rels[n];
+    // kort tryck: släppt före utgångens gräns (eller utgången har ingen långtrycksfunktion)
+    // ett tryck räknas som långt om det når den kortaste långtrycksgränsen bland knappens utgångar
+    const longs=O.map((o,i)=>i).filter(i=>onBtn(i,n)&&lg(O[i])!=='none').map(i=>hT(O[i]));
+    const btnThr=longs.length?Math.min(...longs):Infinity;
+    if(rel!=null&&rel<btnThr){
+      const grp=O.map((o,i)=>i).filter(i=>onBtn(i,n)&&sh(O[i])==='toggle');
+      if(grp.length){const target=grp.some(i=>!isOn(i)); grp.forEach(i=>rt.imp[i]=target);
+        log('Tryckknapp '+n+', kort tryck: '+grp.map(i=>O[i].id).join(', ')+(target?' på':' av'));}
+    }
+    // långt tryck med Tänd/släck: utlöses när gränsen nås, en gång per tryck, hela gruppen samtidigt
+    if(B.p){
+      const lgrp=O.map((o,i)=>i).filter(i=>onBtn(i,n)&&lg(O[i])==='toggle');
+      if(lgrp.length&&lgrp.some(i=>B.t>=hT(O[i]))&&lgrp.some(i=>rt.longDone[i]!==B.id)){
+        const target=lgrp.some(i=>!isOn(i)); lgrp.forEach(i=>{rt.imp[i]=target;rt.longDone[i]=B.id;});
+        log('Tryckknapp '+n+', långt tryck: '+lgrp.map(i=>O[i].id).join(', ')+(target?' på':' av'));
+      }
+    }
+  }
+  // kl. 15: upptäck när tändningen slås av eller på
+  const kOff=rt.prevKl15&&!sim.kl15, kOn=!rt.prevKl15&&sim.kl15; rt.prevKl15=sim.kl15;
+  const now=new Date();
+
+  O.forEach((o,i)=>{
+    // blink medan knappen hålls in
+    if(o.trig==='btn'){const B=sim.btns[btnNo(o,i)];
+      const hold=B.p&&lg(o)==='blink'&&B.t>=hT(o);
+      if(hold!==rt.lblink[i]){rt.lblink[i]=hold;log(o.name+(hold?' blinkar (knappen hålls in)':' tillbaka till '+(rt.imp[i]?'tänd':'släckt')));}
+    } else rt.lblink[i]=false;
+    const trig = o.trig==='none'?false : o.trig==='btn'?(rt.imp[i]||rt.lblink[i]) : o.trig==='kl15'?sim.kl15 : o.trig==='dplus'?sim.dplus : o.trig==='back'?sim.back : sim.dark;
+    let want=false, extra='';
+    if(o.func==='latch') want=rt.latch[i]||trig;
+    else if(o.func==='const') want=trig||!!rt.req[i];
+    else if(o.func==='blink') want=trig||!!rt.req[i];
+    else if(o.func==='offdelay'){
+      if(trig||rt.req[i]){want=true;rt.offT[i]=o.time;}
+      else if(rt.offT[i]>0){rt.offT[i]-=dt;want=true;extra='släcks om '+Math.ceil(rt.offT[i])+' s';}
+    }
+    // tändning av: släck direkt eller eftersläckning
+    if(kOff&&ig(o)==='delay'){rt.afterT[i]=igT(o);rt.afterOn[i]=rt.out[i].st!=='AV';if(rt.afterOn[i])log(o.name+' lyser kvar '+fmtT(igT(o)));}
+    if(kOn) rt.afterT[i]=0;
+    if(!sim.kl15&&ig(o)!=='ignore'){
+      if(ig(o)==='off') want=false;
+      else if(rt.afterT[i]>0){rt.afterT[i]-=dt; want=want||rt.afterOn[i]; if(want)extra='eftersläckning, släcks om '+fmtT(rt.afterT[i]); if(rt.afterT[i]<=0&&want)log(o.name+' släckt efter eftersläckning');}
+      else want=false;
+    }
+    // tidsstyrd start (fungerar även med tändningen av)
+    const win=inWindow(o,now);
+    if(rt.schT[i]>0){rt.schT[i]-=dt; if(rt.schT[i]<=0)log(o.name+': tidsstyrd körning klar');}
+    const schLeft=Math.max(win||0,rt.schT[i]);
+    const key=win?'w':''; if(key!==rt.schLast[i]){if(win)log(o.name+': tidsstyrd start');rt.schLast[i]=key;}
+    if(schLeft>0){want=true;extra='tidsstyrd, '+fmtT(schLeft)+' kvar';}
+    // testläge i installatörsläget
+    if(rt.test[i]){want=true;extra='testläge';}
+    // Egen frånslagsspänning: ersätter prioritetsavlastningen för utgången, aldrig under kritisk nivå
+    const cutEff=Math.max(o.cut,11.0*k());
+    if(o.cutOn){ if(sim.v<cutEff) rt.cutLow[i]=true; else if(sim.v>cutEff+0.2*k()) rt.cutLow[i]=false; } else rt.cutLow[i]=false;
+    let st,lit=false;
+    if(!want) st='AV';
+    else if(rt.mode==='road'&&!o.road&&!rt.test[i]) st='SPÄRRAD';
+    else if(rt.prot==='KRITISK') st='AVLASTAD';
+    else if(o.cutOn&&rt.cutLow[i]) st='LÅG SPÄNNING';
+    else if(!o.cutOn&&o.prio<=rt.shed) st=rt.prot==='ATER'?'VÄNTAR':'AVLASTAD';
+    else if(o.trig==='btn'&&rt.lblink[i]){st='BLINKAR';lit=true;}
+    else if(o.func==='blink'){st='BLINKAR';lit=true;} // indikatorn lyser fast, den följer inte blinket
+    else {st='PÅ';lit=true;}
+    // vad lampan verkligen gör (följer blinket), till den simulerade lampan
+    let real=st==='PÅ';
+    if(st==='BLINKAR'){const holdB=o.trig==='btn'&&rt.lblink[i];
+      const per=holdB?hB(o):Math.max(.2,o.time||.5);
+      let ph=Math.floor(rt.phase/per)%2===0; if(!holdB&&o.anti)ph=!ph; real=ph;}
+    // ström (simulerad) och vakt för trasig lampa
+    rt.I[i]=real?sim.load[i]*(sim.broken[i]?0.45:1):0;
+    let w='';
+    if(real&&o.nomI>0){
+      const r=rt.I[i]/o.nomI;
+      if(r<0.6||r>1.5){rt.badT[i]+=dt; if(rt.badT[i]>=1.5) w=r<0.6?'Trolig trasig lampa':'Högre ström än normalt'; else w=rt.warn[i];}
+      else {rt.badT[i]=0;}
+    } else if(!real&&st!=='BLINKAR'){ w=rt.warn[i]&&want?rt.warn[i]:''; } else w=rt.warn[i];
+    if(w!==rt.warn[i]){ if(w)log(o.id+' '+o.name+': '+w.toLowerCase()+' ('+fmtA(rt.I[i])+' mot normalt '+fmtA(o.nomI)+')'); else if(rt.warn[i])log(o.id+' '+o.name+': strömmen är normal igen'); rt.warn[i]=w; }
+    rt.out[i]={st,lit,extra,real};
+  });
+}
+
+/* ---------- Riktig central via Bluetooth (protokollet: ble-protokoll.md) ---------- */
+const BLE={svc:'33b30001-9a1f-453f-a06b-2e6af276b6d1',st:'33b30002-9a1f-453f-a06b-2e6af276b6d1',cmd:'33b30003-9a1f-453f-a06b-2e6af276b6d1'};
+const DKEY='elcentral.ble.enhet';
+const PROT_KOD=['NORMAL','VARNING','AVLASTNING','KRITISK','ATER'];
+const UT_KOD=['AV','PÅ','BLINKAR','AVLASTAD','VÄNTAR','SPÄRRAD','LÅG SPÄNNING'];
+const STALE_MS=4000; // ingen status på så här länge: anslutningen räknas som bruten
+// src 'sim' = appen kör mot simulatorn; 'real' = en central är vald (ansluten, ansluter eller återansluter)
+const conn={src:'sim',state:'sim',dev:null,stC:null,cmdC:null,name:'',retry:0,timer:null,busy:false,resuming:false};
+let cen=null; // senaste status från centralen, null tills första ramen kommit
+const real=()=>conn.src==='real';
+const online=()=>real()&&conn.state==='connected'&&!!cen;
+
+function parseFrame(dv){
+  if(dv.byteLength<20||dv.getUint8(0)!==1) return null;
+  const b=i=>dv.getUint8(i), fl=b(6), pn=b(7), pc=!!(pn&1);
+  const c={v:dv.getUint16(1,true)/100,sys:b(3),prot:PROT_KOD[b(4)]||'NORMAL',shed:b(5),
+    kl15:!!(fl&1),dplus:!!(fl&2),back:!!(fl&4),mode:fl&64?'road':'work',hasI:!!(fl&128),
+    panel:pc,dark:pc&&!!(pn&2),lightFault:pc&&!!(pn&4),lux:dv.getUint16(8,true),out:[],I:[],t:Date.now()};
+  for(let i=0;i<5;i++){const x=b(10+i),st=UT_KOD[x&15]||'AV';
+    c.out.push({st,lit:st==='PÅ'||st==='BLINKAR',extra:'',real:st==='PÅ',vald:!!(x&16)});
+    c.I.push(b(15+i)/10);}
+  return c;
+}
+/* händelselogg av det som ändras i centralen */
+function diffLog(a,c){
+  if(!a){log('Status från '+conn.name);return;}
+  if(a.prot!==c.prot) log('Batteriskydd: '+PROT[c.prot].title);
+  if(c.shed>a.shed) log('Prioritet '+c.shed+' bortkopplad'); else if(c.shed<a.shed) log('Prioritet '+a.shed+' inkopplad');
+  if(a.mode!==c.mode) log('Driftläge: '+modeName(c.mode));
+  [['kl15','Tändning (kl. 15)'],['dplus','Generator (D+)'],['back','Backsignal'],['dark','Mörkt']].forEach(([k2,n])=>{if(a[k2]!==c[k2])log(n+(c[k2]?' aktiv':' av'));});
+  if(a.panel!==c.panel) log(c.panel?'Panelen ansluten':'Panelen svarar inte');
+  if(a.lightFault!==c.lightFault) log(c.lightFault?'Panelens ljussensor svarar inte':'Panelens ljussensor fungerar igen');
+  c.out.forEach((r,i)=>{if(r.st!==a.out[i].st) log(cfg.outputs[i].name+': '+r.st.toLowerCase());});
+}
+function onFrame(dv){
+  const c=parseFrame(dv); if(!c) return;
+  const first=!cen, modeChanged=cen&&cen.mode!==c.mode;
+  diffLog(cen,c); cen=c;
+  if(first||modeChanged) rerender();
+}
+function setConn(state){
+  conn.state=state;
+  const el=document.getElementById('conn'), tx=document.getElementById('conntxt'), b=document.getElementById('connbtn');
+  const T={sim:['sim','Simulator','Ingen central ansluten. Appen kör mot en simulator.'],
+    connecting:['ing','Ansluter','Ansluter till '+conn.name+' …'],
+    connected:['ok','Ansluten','Ansluten till '+conn.name],
+    lost:['lost','Frånkopplad','Anslutningen till '+conn.name+' bröts. Appen försöker återansluta.']}[state];
+  el.className='chip '+T[0]; tx.textContent=T[1]; el.title=T[2];
+  b.textContent=state==='sim'?'Anslut':'Koppla från'; b.classList.toggle('pri',state==='sim');
+  rerender();
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const withTimeout=(p,ms)=>Promise.race([p,sleep(ms).then(()=>{throw new Error('timeout')})]);
+async function attempt(){
+  clearTimeout(conn.timer); if(!real()||conn.busy) return;
+  conn.busy=true; setConn('connecting');
+  try{
+    const srv=await withTimeout(conn.dev.gatt.connect(),20000);
+    const s=await srv.getPrimaryService(BLE.svc);
+    conn.stC=await s.getCharacteristic(BLE.st); conn.cmdC=await s.getCharacteristic(BLE.cmd);
+    conn.stC.oncharacteristicvaluechanged=e=>onFrame(e.target.value);
+    await conn.stC.startNotifications();
+    onFrame(await conn.stC.readValue());
+    if(!real()){try{conn.dev.gatt.disconnect()}catch(e){} return;}
+    conn.retry=0; log('Ansluten till '+conn.name); setConn('connected');
+    conn.resuming=false;
+  }catch(e){
+    if(!real()) return;
+    try{conn.dev.gatt.disconnect()}catch(e2){}
+    // automatisk anslutning när appen öppnas: finns centralen inte i närheten blir det simulatorn
+    if(conn.resuming){conn.resuming=false;conn.src='sim';cen=null;log(conn.name+' svarar inte. Appen kör mot simulatorn.');setConn('sim');return;}
+    setConn('lost'); schedule();
+  }finally{conn.busy=false;}
+}
+function schedule(){clearTimeout(conn.timer);const d=Math.min(10000,1000*2**conn.retry);conn.retry=Math.min(conn.retry+1,4);conn.timer=setTimeout(attempt,d);}
+function onGattLost(){
+  if(!real()) return;
+  if(conn.state==='connected'){log('Anslutningen till '+conn.name+' bröts');setConn('lost');}
+  if(!conn.busy) schedule();
+}
+function useDevice(dev){
+  if(conn.dev&&conn.dev!==dev){try{conn.dev.gatt.disconnect()}catch(e){}}
+  if(conn.dev!==dev) dev.addEventListener('gattserverdisconnected',onGattLost);
+  conn.dev=dev; conn.src='real'; conn.name=dev.name||'centralen'; conn.retry=0; cen=null;
+  try{localStorage.setItem(DKEY,dev.id)}catch(e){}
+  attempt();
+}
+async function connectNew(){
+  conn.resuming=false;
+  if(!navigator.bluetooth){toast('Bluetooth fungerar bara i Chrome på Android (eller dator), via https.');return;}
+  let dev;
+  try{dev=await navigator.bluetooth.requestDevice({filters:[{services:[BLE.svc]},{namePrefix:'Elcentral-'}],optionalServices:[BLE.svc]});}
+  catch(e){if(e&&e.name!=='NotFoundError')toast('Kunde inte söka efter centralen: '+e.message);return;}
+  useDevice(dev);
+}
+function disconnectUser(){
+  conn.src='sim'; clearTimeout(conn.timer);
+  const d=conn.dev; if(d){try{d.gatt.disconnect()}catch(e){}}
+  try{localStorage.removeItem(DKEY)}catch(e){}
+  log('Frånkopplad från '+conn.name+'. Appen kör mot simulatorn.'); cen=null; setConn('sim');
+}
+/* tidigare vald central: återanslut automatiskt när sidan öppnas (om webbläsaren minns behörigheten) */
+async function resume(){
+  let id=null;try{id=localStorage.getItem(DKEY)}catch(e){}
+  if(!id||!navigator.bluetooth||!navigator.bluetooth.getDevices) return;
+  try{const d=(await navigator.bluetooth.getDevices()).find(x=>x.id===id); if(d){conn.resuming=true;useDevice(d);}}catch(e){}
+}
+/* kommandon skickas ett i taget (Web Bluetooth tillåter bara en GATT-operation åt gången) */
+let cmdQ=Promise.resolve();
+function send(kod,arg){
+  if(!online()){toast('Inte ansluten till centralen');return;}
+  cmdQ=cmdQ.then(()=>conn.cmdC.writeValueWithResponse(new Uint8Array([kod,arg]))).catch(()=>toast('Kunde inte skicka till centralen'));
+}
+document.getElementById('connbtn').addEventListener('click',()=>{conn.state==='sim'?connectNew():disconnectUser();});
+
+/* det appen visar: centralens data när en central är vald, annars simulatorns */
+const NOW_OUT={st:'–',lit:false,extra:'',real:false,vald:false};
+const cv=()=>real()?(cen?cen.v:null):sim.v;
+const csys=()=>real()?(cen&&cen.sys?cen.sys:(cen&&cen.v>18?24:12)):sys();
+const ks=()=>csys()/12;
+const cprot=()=>real()?(cen?cen.prot:'NORMAL'):rt.prot;
+const cshed=()=>real()?(cen?cen.shed:0):rt.shed;
+const cmode=()=>real()?(cen?cen.mode:'work'):rt.mode;
+const cout=i=>real()?(cen?cen.out[i]:NOW_OUT):rt.out[i];
+const cin=k2=>real()?!!(cen&&cen[k2]):sim[k2];
+const cI=i=>real()?(cen?cen.I[i]:0):rt.I[i];
+const cwarn=i=>real()?'':rt.warn[i];
+function cpressed(i){
+  if(real()) return !!(cen&&cen.out[i].vald);
+  const o=cfg.outputs[i]; return o.trig==='btn'?rt.imp[i]:o.func==='latch'?rt.latch[i]:!!rt.req[i];
+}
+const NS='<span class="nosup">stöds inte av centralen än</span>';
+const ns=()=>real()?' '+NS:'';
+
+/* ---------- Gränssnitt ---------- */
+let tab='out', unlocked=false, pinEntry='', pinErr='';
+const view=document.getElementById('view');
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function stateCls(st){return st==='PÅ'||st==='BLINKAR'?'on':st==='AVLASTAD'||st==='LÅG SPÄNNING'?'shed':st==='VÄNTAR'?'wait':st==='SPÄRRAD'?'lock':''}
+function banner(){
+  if(real()&&!cen) return `<div class="banner info" role="status"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></svg></div><div><div class="big">Ansluter till centralen</div><p>Väntar på status från ${esc(conn.name)}.</p></div></div>`;
+  const prot=cprot(), shed=cshed();
+  const p=PROT[prot];
+  const ico=prot==='NORMAL'?'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg>'
+    :'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg>';
+  return `<div class="banner ${p.cls}" role="status"><div class="ico">${ico}</div><div><div class="big">${p.title}${shed?` · ${shed} av 5 prioriteter bortkopplade`:''}</div><p>${p.text}</p></div></div>`;
+}
+const metaText=(o,i,r)=>r.extra||FUNCS[o.func]+(o.trig!=='none'?' · '+trigName(o,i):'');
+function benchLabel(o){
+  if(o.trig!=='btn') return 'Simulerad lampa';
+  const s=sh(o)==='toggle'?'kort tryck tänder/släcker':'', l=lg(o)==='blink'?'håll in för blink':lg(o)==='toggle'?'långt tryck tänder/släcker':'';
+  return 'Simulerad lampa'+(s||l?' · '+[s,l].filter(Boolean).join(', '):'');
+}
+function bench(o,i){
+  if(real()) return ''; // simulerad lampa och simulatorns ingångar hör till simulatorn
+  let ctl='';
+  if(o.trig==='btn'){const n=btnNo(o,i);ctl=`<button class="press" data-press="${n}" aria-label="Tryckknapp ${n}: tryck kort eller håll in">Tryckknapp ${n}</button>`;}
+  else if(o.trig!=='none') ctl=`<button data-in="${o.trig}" aria-pressed="${sim[o.trig]}">${TRIGS[o.trig]}: ${sim[o.trig]?'aktiv':'av'}</button>`;
+  return `<div class="bench"><span class="bulb ${rt.out[i].real?'lit':''}" data-bulb="${i}" aria-hidden="true"></span><span class="lbl">${benchLabel(o)}</span>${ctl}</div>`;
+}
+function renderOut(){
+  const mode=cmode(), dis=real()&&!online()?'disabled':'';
+  return `<section class="sec">${banner()}
+   <div class="seg" role="group" aria-label="Driftläge">
+     <button id="m-work" aria-pressed="${mode==='work'}" ${dis}>${modeName('work')}</button>
+     <button id="m-road" aria-pressed="${mode==='road'}" ${dis}>${modeName('road')}</button>
+   </div>
+   <p class="note">${mode==='road'?modeName('road')+': bara utgångar som är tillåtna i det här läget kan tändas.':modeName('work')+': alla utgångar får användas.'}</p>
+   <div class="sechead"><h2>Utgångar</h2><span>Tryck för att slå på eller av</span></div>
+   <div class="outs">${cfg.outputs.map((o,i)=>{const r=cout(i);const sc=stateCls(r.st);
+     const pressed=cpressed(i), w=cwarn(i);
+     const lampCls=r.lit?'lit':sc==='shed'?'shed':sc==='wait'?'wait':'';
+     return `<div class="out"><div class="lamp ${lampCls}" data-lamp="${i}" aria-hidden="true">${o.id}</div>
+       <div class="info"><div class="name">${esc(o.name)}</div>
+       <div class="meta"><span class="state ${sc}" data-st="${i}">${r.st}</span><span data-ex="${i}">${metaText(o,i,r)}</span></div>
+       <div class="warnline" data-w="${i}" ${w?'':'hidden'}>${w}</div></div>
+       <button class="tbtn" data-t="${i}" aria-pressed="${pressed}" aria-label="${esc(o.name)}" ${dis}>${pressed?'På':'Av'}</button>${bench(o,i)}</div>`}).join('')}
+   </div></section>`;
+}
+function renderStatus(){
+  const v=cv(), s=csys(), lo=s===24?21:10.5, hi=s===24?29:14.5, pct=v==null?0:Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100));
+  const prot=cprot();
+  const col=prot==='NORMAL'?'var(--ok)':prot==='VARNING'?'var(--warn)':prot==='ATER'?'var(--info)':'var(--bad)';
+  const charging=v!=null&&v/ks()>13.2;
+  const warns=cfg.outputs.map((o,i)=>cwarn(i)?`<div class="inrow"><span>${o.id} · ${esc(o.name)}</span><span class="pill bad">${cwarn(i)}</span></div>`:'').join('');
+  const noI=real()&&!(cen&&cen.hasI);
+  const lightRow=real()&&cen&&cen.panel?`<div class="inrow"><span>Ljus (panelens sensor)</span><span class="pill ${cen.lightFault?'bad':''}">${cen.lightFault?'Sensorn svarar inte':cen.lux.toLocaleString('sv-SE')+' lux'}</span></div>`:'';
+  return `<section class="sec">${banner()}
+   ${warns?`<div class="tile"><span class="k">Varningar</span><div class="inputs">${warns}</div></div>`:''}
+   <div class="grid2">
+     <div class="tile wide"><span class="k">Batteri</span><span class="v mono" id="st-v">${v==null?'– V':fmtV(v)}</span>
+       <div class="bar"><i id="st-bar" style="width:${pct}%;background:${col}"></i></div>
+       <div class="ticks"><span>${fmtV(lo)}</span><span>${s} V-system</span><span>${fmtV(hi)}</span></div></div>
+     <div class="tile"><span class="k">Laddning</span><span class="v">${v==null?'–':charging?'Laddar':'Laddar inte'}</span></div>
+     <div class="tile"><span class="k">Total ström</span><span class="v ${noI?'':'mono'}">${noI?'Mäts inte':fmtA([0,1,2,3,4].reduce((a,i)=>a+cI(i),0))}</span></div>
+   </div>
+   <div class="tile"><span class="k">Ingångar</span><div class="inputs">
+     ${[['Tändning (kl. 15)',cin('kl15')],['Generator (D+)',cin('dplus')],['Backsignal',cin('back')],['Mörkt (ljussensor)',cin('dark')],['Panel',cin('panel')]].map(([n,on])=>`<div class="inrow"><span>${n}</span><span class="pill ${on?'on':''}">${on?'Aktiv':'Av'}</span></div>`).join('')}
+     ${lightRow}
+   </div></div>
+   <div class="tile"><span class="k">Händelser</span>${rt.log.length?`<ul class="log">${rt.log.map(e=>`<li><time>${e.t}</time><b>${esc(e.m)}</b></li>`).join('')}</ul>`:'<p class="note">Inga händelser än.</p>'}</div>
+  </section>`;
+}
+function renderSim(){
+  if(real()) return `<section class="sec">
+   <div class="sechead"><h2>Simulator</h2><span>Ersätts av Bluetooth</span></div>
+   <p class="note">Appen är kopplad till ${esc(conn.name)}, så simulatorn är pausad. Flikarna Utgångar och Status visar centralens riktiga data. Tryck "Koppla från" i sidhuvudet för att köra mot simulatorn igen.</p></section>`;
+  return `<section class="sec">
+   <div class="sechead"><h2>Simulator</h2><span>Ersätts av Bluetooth</span></div>
+   <p class="note">Ingen central är ansluten. Här styr du det som centralen annars mäter, för att se hur appen och logiken reagerar. Batteriskyddets tider är förkortade till några sekunder.</p>
+   <div class="sheet">
+     <div class="sechead"><b>Batterispänning</b><span class="volt" id="simv">${fmtV(sim.v)}</span></div>
+     <input type="range" id="vslider" min="9" max="30" step="0.1" value="${sim.v}" aria-label="Batterispänning">
+     <div class="row">
+       <button class="btn" data-v="27.8">Motor igång 27,8</button>
+       <button class="btn" data-v="25.2">Vila 25,2</button>
+       <button class="btn" data-v="23.2">Låg 23,2</button>
+       <button class="btn" data-v="21.4">Kritisk 21,4</button>
+       <button class="btn" data-v="12.6">12 V-fordon 12,6</button>
+     </div>
+   </div>
+   <div class="sheet">
+     <b>Ingångar</b>
+     <div class="tog">
+       ${[['kl15','Kl. 15'],['dplus','D+'],['back','Back'],['dark','Mörkt'],['panel','Panel']].map(([k2,n])=>`<button data-in="${k2}" aria-pressed="${sim[k2]}">${n}<span>${sim[k2]?'Aktiv':'Av'}</span></button>`).join('')}
+     </div>
+   </div>
+   <div class="sheet">
+     <b>Återfjädrande tryckknappar</b>
+     <p class="note">Varje knapp sitter på en egen ingång. Vad ett kort och ett långt tryck gör ställs in per utgång i installatörsläget, så samma knapp kan styra flera utgångar.</p>
+     <div class="tog">${[1,2,3,4].map(n=>`<button class="hold press" data-press="${n}">Tryckknapp ${n}</button>`).join('')}</div>
+   </div>
+   <div class="sheet">
+     <b>Lampor och ström</b>
+     <p class="note">Strömmen varje utgång drar när den är tänd. Markera en lampa som trasig för att se varningen.</p>
+     ${cfg.outputs.map((o,i)=>`<div class="simrow"><span>${o.id} · ${esc(o.name)}</span>
+       <input type="number" inputmode="decimal" id="sl${i}" data-load="${i}" value="${sim.load[i]}" step="0.1" min="0" aria-label="Ström ${o.id} i ampere"><span class="unit">A</span>
+       <button data-broken="${i}" aria-pressed="${sim.broken[i]}">${sim.broken[i]?'Trasig':'Hel'}</button></div>`).join('')}
+   </div></section>`;
+}
+const sel=(id,f,i,opts,val,dis)=>`<select id="${id}" data-f="${f}" data-i="${i}" ${dis?'disabled':''}>${Object.entries(opts).map(([k2,v])=>`<option value="${k2}" ${k2===val?'selected':''}>${v}</option>`).join('')}</select>`;
+function renderInst(){
+  if(!unlocked){
+    return `<section class="pinwrap"><h2>Installatörsläge</h2><p class="hint">Ange PIN-kod. I simulatorn är den 1234 tills du byter den.</p>
+     <div class="pindots">${[0,1,2,3].map(i=>`<i class="${i<pinEntry.length?'f':''}"></i>`).join('')}</div>
+     <p class="err" role="alert">${pinErr}</p>
+     <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-pin="${n}">${n}</button>`).join('')}<button data-pin="C" aria-label="Rensa">C</button><button data-pin="0">0</button><button data-pin="B" aria-label="Radera">←</button></div></section>`;
+  }
+  const names=Object.keys(tpl).sort((a,b)=>a.localeCompare(b,'sv'));
+  return `<section class="sec">
+   <div class="sechead"><h2>Installatörsläge</h2><button class="btn" id="lock">Lås</button></div>
+   ${real()?`<p class="note">Centralen kör än så länge sina inbyggda inställningar. Det du ändrar här sparas i telefonen och förs över till centralen i nästa version. Funktioner märkta ${NS} finns bara i simulatorn.</p>`:''}
+   <div class="tile"><div class="form" style="padding:0">
+     <div class="field full"><label for="prof">Användning</label><select id="prof">${PROFILES.map(p=>`<option ${p===cfg.profile?'selected':''}>${p}</option>`).join('')}</select></div>
+     <div class="field"><label for="mwork">Namn på läge 1</label><input type="text" id="mwork" value="${modeName('work')}" maxlength="14" placeholder="Arbete"></div>
+     <div class="field"><label for="mroad">Namn på läge 2</label><input type="text" id="mroad" value="${modeName('road')}" maxlength="14" placeholder="Väg"></div>
+     <p class="note field full">Läge 1 tillåter alla utgångar. I läge 2 tänds bara utgångar som är markerade som tillåtna i det läget.</p>
+   </div></div>
+
+   <details class="cfg" id="dmall"><summary><b>Mallar</b><span>${names.length?names.length+' sparade':'Spara inställningar för en maskinmodell'}</span></summary>
+     <div class="form">
+       <div class="field full"><label for="tplname">Namn på mallen</label><input type="text" id="tplname" placeholder="T.ex. EC300F standard" maxlength="40"></div>
+       <div class="field full"><button class="btn pri" id="tplsave">Spara nuvarande inställningar som mall</button></div>
+       ${names.length?names.map(n=>`<div class="field full tplrow"><span>${esc(n)}</span><button class="btn" data-tplload="${esc(n)}">Läs in</button><button class="btn dan" data-tpldel="${esc(n)}">Ta bort</button></div>`).join(''):'<p class="note field full">Inga mallar än.</p>'}
+       <p class="subh field full">Flytta mellan telefoner</p>
+       <div class="field full"><button class="btn" id="tplcopy">Kopiera inställningarna som text</button></div>
+       <div class="field full"><label for="tpltext">Klistra in inställningar</label><textarea id="tpltext" rows="3" placeholder="Klistra in text som kopierats från en annan telefon"></textarea></div>
+       <div class="field full"><button class="btn" id="tplpaste">Läs in inklistrad text</button></div>
+       <p class="note field full">PIN-koden följer inte med i mallar och text.</p>
+     </div></details>
+
+   <details class="cfg" id="dtest"><summary><b>Testläge</b><span>${real()?NS:'Prova utgångarna och lär in normal ström'}</span></summary>
+     <div class="form">
+       <p class="note field full">Tänd en utgång i taget och kontrollera att rätt lampa lyser och att strömmen är rimlig. Tryck "Lär in" när lamporna fungerar som de ska, så varnar centralen sedan om strömmen avviker, till exempel vid en trasig lampa.</p>
+       ${cfg.outputs.map((o,i)=>`<div class="field full testrow"><span><b>${o.id}</b> ${esc(o.name)}<br><small>Normal: ${o.nomI>0?fmtA(o.nomI):'inte inlärd'}</small></span>
+         <span class="mono" data-ti="${i}">${fmtA(cI(i))}</span>
+         <button class="btn" data-test="${i}" aria-pressed="${rt.test[i]}" ${real()?'disabled':''}>${rt.test[i]?'Släck':'Tänd'}</button>
+         <button class="btn" data-learn="${i}" ${real()?'disabled':''}>Lär in</button></div>`).join('')}
+       <div class="field full"><button class="btn" id="testoff" ${real()?'disabled':''}>Släck alla tester</button></div>
+     </div></details>
+
+   <div class="sechead"><h2>Utgångar</h2><span>Prioritet 1 kopplas bort först</span></div>
+   ${cfg.outputs.map((o,i)=>{const isB=o.trig==='btn';return `<details class="cfg" id="d${i}"><summary><b>${o.id} · ${esc(o.name)}</b><span>${FUNCS[o.func]} · ${trigName(o,i)} · prio ${o.prio}</span></summary>
+     <div class="form">
+       <div class="field full"><label for="n${i}">Namn</label><input type="text" id="n${i}" data-f="name" data-i="${i}" value="${esc(o.name)}" maxlength="24"></div>
+       <div class="field"><label for="f${i}">Funktion</label>${sel('f'+i,'func',i,FUNCS,o.func)}</div>
+       <div class="field"><label for="t${i}">Styrs av</label>${sel('t'+i,'trig',i,real()?Object.assign({},TRIGS,{btn:'Tryckknapp (stöds inte av centralen än)'}):TRIGS,o.trig)}</div>
+       <div class="field"><label for="tm${i}">${o.func==='blink'?'Blinktid (s)':'Fördröjning (s)'}</label><input type="number" inputmode="decimal" id="tm${i}" data-f="time" data-i="${i}" value="${o.time}" min="0" step="0.1" ${o.func==='blink'||o.func==='offdelay'?'':'disabled'}></div>
+       <div class="field"><label for="p${i}">Prioritet</label><select id="p${i}" data-f="prio" data-i="${i}">${[1,2,3,4,5].map(p=>`<option ${p===o.prio?'selected':''}>${p}</option>`).join('')}</select></div>
+       <label class="check field"><input type="checkbox" id="a${i}" data-f="anti" data-i="${i}" ${o.anti?'checked':''} ${o.func==='blink'?'':'disabled'}>Motfas (växelblink)</label>
+       <label class="check field"><input type="checkbox" id="r${i}" data-f="road" data-i="${i}" ${o.road?'checked':''}>Tillåten i läge ${modeName('road')}</label>
+
+       <p class="subh field full">Tryckknapp ${isB?'':'<small>(välj "Tryckknapp" under Styrs av)</small>'}${ns()}</p>
+       <div class="field full"><label for="bn${i}">Vilken tryckknapp (ingång)</label><select id="bn${i}" data-f="btn" data-i="${i}" ${isB?'':'disabled'}>${[1,2,3,4].map(n=>`<option value="${n}" ${n===btnNo(o,i)?'selected':''}>Tryckknapp ${n}</option>`).join('')}</select></div>
+       <div class="field"><label for="sp${i}">Kort tryck</label>${sel('sp'+i,'short',i,SHORTS,sh(o),!isB)}</div>
+       <div class="field"><label for="lp${i}">Långt tryck</label>${sel('lp'+i,'long',i,LONGS,lg(o),!isB)}</div>
+       <div class="field"><label for="ht${i}">Gräns för långt tryck (s)</label><input type="number" inputmode="decimal" id="ht${i}" data-f="holdT" data-i="${i}" value="${hT(o)}" min="0.3" step="0.1" ${isB&&lg(o)!=='none'?'':'disabled'}></div>
+       <div class="field"><label for="hb${i}">Blinktid medan den hålls in (s)</label><input type="number" inputmode="decimal" id="hb${i}" data-f="holdBlink" data-i="${i}" value="${hB(o)}" min="0.1" step="0.1" ${isB&&lg(o)==='blink'?'':'disabled'}></div>
+       <p class="note field full">Utgångar med samma knapp styrs tillsammans. Är någon av dem släckt tänds alla, annars släcks alla. På så sätt kan en knapp styra en hel grupp, med kort tryck för en grupp och långt tryck för en annan.</p>
+
+       <p class="subh field full">När tändningen slås av${ns()}</p>
+       <div class="field"><label for="ig${i}">Utgången</label>${sel('ig'+i,'ign',i,IGNS,ig(o))}</div>
+       <div class="field"><label for="igt${i}">Lyser kvar (s)</label><input type="number" inputmode="numeric" id="igt${i}" data-f="ignT" data-i="${i}" value="${igT(o)}" min="1" step="1" ${ig(o)==='delay'?'':'disabled'}></div>
+
+       <p class="subh field full">Tidsstyrd start${ns()}</p>
+       <label class="check field full"><input type="checkbox" id="so${i}" data-f="schOn" data-i="${i}" ${o.schOn?'checked':''}>Starta automatiskt en viss tid</label>
+       <div class="field"><label for="st${i}">Starttid</label><input type="time" id="st${i}" data-f="schTime" data-i="${i}" value="${o.schTime||'06:30'}" ${o.schOn?'':'disabled'}></div>
+       <div class="field"><label for="sd${i}">Längd (min)</label><input type="number" inputmode="numeric" id="sd${i}" data-f="schDur" data-i="${i}" value="${o.schDur??30}" min="1" step="1" ${o.schOn?'':'disabled'}></div>
+       <div class="field"><label for="sw${i}">Dagar</label>${sel('sw'+i,'schDays',i,DAYS,o.schDays||'all',!o.schOn)}</div>
+       <div class="field" style="justify-content:flex-end"><button class="btn" data-schtest="${i}" ${real()?'disabled':''}>${rt.schT[i]>0?'Stoppa provkörning':'Provkör nu'}</button></div>
+
+       <p class="subh field full">Skydd</p>
+       <label class="check field"><input type="checkbox" id="c${i}" data-f="cutOn" data-i="${i}" ${o.cutOn?'checked':''}>Egen frånslagsspänning${ns()}</label>
+       <div class="field"><label for="cv${i}">Slå av under (V)</label><input type="number" inputmode="decimal" id="cv${i}" data-f="cut" data-i="${i}" value="${o.cut}" step="0.1" min="${(11*ks()).toFixed(1)}" ${o.cutOn?'':'disabled'}></div>
+       <p class="note field full">${o.cutOn
+         ?`Utgången följer bara sin egen gräns och kopplas inte bort i prioritetsordning. Lägsta tillåtna gräns är ${fmtV(11*ks())}, där centralen stänger allt så att maskinen kan starta.${o.cut<11*ks()?` Din inställning ${fmtV(o.cut)} räknas som ${fmtV(11*ks())}.`:''} Utgången tänds igen när spänningen är ${fmtV(0.2*ks())} över gränsen.`
+         :`Utgången kopplas bort enligt sin prioritet när batteriskyddet avlastar (under ${fmtV(11.8*ks())}).`}</p>
+     </div></details>`}).join('')}
+   <div class="tile"><span class="k">PIN-kod</span>
+     <div class="form" style="padding:0"><div class="field"><label for="newpin">Ny PIN (4 siffror)</label><input type="number" inputmode="numeric" id="newpin" placeholder="••••"></div>
+     <div class="field" style="justify-content:flex-end"><button class="btn" id="setpin">Byt PIN</button></div></div></div>
+   <div class="btnrow"><button class="btn dan" id="reset">Återställ standardinställningar</button></div>
+   <p class="note">${real()?'Ändringar sparas direkt i den här telefonens webbläsare. Centralen tar inte emot inställningar än.':'Ändringar sparas direkt. I simulatorn sparas de bara i den här telefonens webbläsare. Med en riktig central sparas de i centralen.'}</p>
+  </section>`;
+}
+function render(){
+  const open=[...view.querySelectorAll('details[open]')].map(d=>d.id);
+  const y=window.scrollY;
+  view.innerHTML=tab==='out'?renderOut():tab==='status'?renderStatus():tab==='sim'?renderSim():renderInst();
+  open.forEach(id=>{const d=document.getElementById(id);if(d)d.open=true});
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===tab?'page':'false'));
+  hdr();
+  return y;
+}
+function rerender(){const y=window.scrollY;render();window.scrollTo(0,y);}
+function hdr(){const v=cv();document.getElementById('hdrv').textContent=v==null?'– V':fmtV(v);document.getElementById('hdrsub').textContent=cfg.profile+' · '+csys()+' V';}
+let toastT;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2200)}
+
+/* lätt uppdatering utan att rita om (så att formulär och fokus inte störs) */
+function live(){
+  hdr();
+  if(tab==='out'){
+    cfg.outputs.forEach((o,i)=>{const r=cout(i);const l=view.querySelector(`[data-lamp="${i}"]`),s=view.querySelector(`[data-st="${i}"]`),e=view.querySelector(`[data-ex="${i}"]`);if(!l)return;
+      const bu=view.querySelector(`[data-bulb="${i}"]`);if(bu)bu.classList.toggle('lit',!!r.real);
+      // knappens läge: i simulatorn bara tryckknappsstyrda (de kan ändras utan att man trycker här), mot centralen alla
+      const tb=view.querySelector(`[data-t="${i}"]`);if(tb&&(real()||o.trig==='btn')){const on=!!cpressed(i);if(tb.getAttribute('aria-pressed')!==String(on)){tb.setAttribute('aria-pressed',on);tb.textContent=on?'På':'Av';}}
+      const wt=cwarn(i), w=view.querySelector(`[data-w="${i}"]`);if(w){w.hidden=!wt;if(w.textContent!==wt)w.textContent=wt;}
+      const sc=stateCls(r.st);l.className='lamp '+(r.lit?'lit':sc==='shed'?'shed':sc==='wait'?'wait':'');
+      s.className='state '+sc;s.textContent=r.st;e.textContent=metaText(o,i,r);});
+    const key=cprot()+cshed()+(real()&&!cen);if(key!==live.k){live.k=key;const b=view.querySelector('.banner');if(b)b.outerHTML=banner();}
+  } else if(tab==='status'){ rerender(); }
+  else if(tab==='inst'){ [0,1,2,3,4].forEach(i=>{const el=view.querySelector(`[data-ti="${i}"]`);if(el)el.textContent=fmtA(cI(i));}); }
+}
+
+document.querySelector('nav.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.tab;render();window.scrollTo(0,0)});
+view.addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.press!==undefined){ if(e.detail===0) sim.btns[t.dataset.press].rel=0; return; }
+  if(t.dataset.t!==undefined&&real()){send(1,+t.dataset.t+1);return;}
+  if((t.id==='m-work'||t.id==='m-road')&&real()){send(2,t.id==='m-road'?1:0);return;}
+  if(t.dataset.t!==undefined){const i=+t.dataset.t,o=cfg.outputs[i];
+    if(o.trig==='btn'){rt.imp[i]=!rt.imp[i];log(o.name+(rt.imp[i]?' på':' av')+' från telefonen');}
+    else if(o.func==='latch'){rt.latch[i]=!rt.latch[i];log(o.name+(rt.latch[i]?' på':' av')+' från telefonen');}
+    else{rt.req[i]=rt.req[i]?0:1;log(o.name+(rt.req[i]?' begärd':' släppt')+' från telefonen');}
+    tick(0);rerender();return;}
+  if(t.id==='m-work'||t.id==='m-road'){rt.mode=t.id==='m-road'?'road':'work';log('Driftläge: '+(rt.mode==='road'?modeName('road'):modeName('work')));tick(0);rerender();return;}
+  if(t.dataset.v){sim.v=+t.dataset.v;rerender();return;}
+  if(t.dataset.in){sim[t.dataset.in]=!sim[t.dataset.in];rerender();return;}
+  if(t.dataset.broken!==undefined){const i=+t.dataset.broken;sim.broken[i]=!sim.broken[i];rerender();return;}
+  if(t.dataset.test!==undefined){const i=+t.dataset.test;rt.test[i]=!rt.test[i];log(cfg.outputs[i].name+(rt.test[i]?' tänd i testläge':' släckt i testläge'));tick(0);rerender();return;}
+  if(t.id==='testoff'){rt.test=Z();tick(0);rerender();return;}
+  if(t.dataset.learn!==undefined){const i=+t.dataset.learn,o=cfg.outputs[i];
+    if(!(rt.I[i]>0)){toast('Tänd utgången först, så att det finns ström att lära in.');return;}
+    o.nomI=Math.round(rt.I[i]*10)/10;rt.warn[i]='';rt.badT[i]=0;save();toast(o.id+': normal ström '+fmtA(o.nomI)+' inlärd');rerender();return;}
+  if(t.dataset.schtest!==undefined){const i=+t.dataset.schtest,o=cfg.outputs[i];
+    if(rt.schT[i]>0){rt.schT[i]=0;log(o.name+': provkörning stoppad');} else {rt.schT[i]=(o.schDur??30)*60;log(o.name+': provkörning av tidsstyrd start');}
+    tick(0);rerender();return;}
+  if(t.dataset.pin!==undefined){const p=t.dataset.pin;pinErr='';
+    if(p==='C')pinEntry='';else if(p==='B')pinEntry=pinEntry.slice(0,-1);else if(pinEntry.length<4)pinEntry+=p;
+    if(pinEntry.length===4){if(pinEntry===cfg.pin){unlocked=true;pinEntry='';}else{pinErr='Fel PIN-kod. Försök igen.';pinEntry='';}}
+    render();return;}
+  if(t.id==='lock'){unlocked=false;render();return;}
+  if(t.id==='setpin'){const v=(document.getElementById('newpin').value||'').trim();if(!/^\d{4}$/.test(v)){toast('PIN-koden ska vara fyra siffror');return;}cfg.pin=v;save();toast('PIN-koden är bytt');document.getElementById('newpin').value='';return;}
+  if(t.id==='reset'){if(t.dataset.sure){cfg=clone(DEFAULT);save();toast('Standardinställningarna är återställda');rerender();}else{t.dataset.sure='1';t.textContent='Tryck igen för att bekräfta';setTimeout(()=>{if(t.isConnected){delete t.dataset.sure;t.textContent='Återställ standardinställningar'}},3000);}return;}
+  // mallar
+  if(t.id==='tplsave'){const n=(document.getElementById('tplname').value||'').trim();if(!n){toast('Skriv ett namn på mallen först');return;}
+    const c=clone(cfg);delete c.pin;tpl[n]=c;saveTpl();toast('Mallen "'+n+'" är sparad');rerender();return;}
+  if(t.dataset.tplload!==undefined){const n=t.dataset.tplload;
+    if(t.dataset.sure){const pin=cfg.pin;cfg=Object.assign(clone(tpl[n]),{pin});save();toast('Mallen "'+n+'" är inläst');rerender();}
+    else{t.dataset.sure='1';t.textContent='Ersätt allt?';setTimeout(()=>{if(t.isConnected){delete t.dataset.sure;t.textContent='Läs in'}},3000);}return;}
+  if(t.dataset.tpldel!==undefined){const n=t.dataset.tpldel;
+    if(t.dataset.sure){delete tpl[n];saveTpl();toast('Mallen "'+n+'" är borttagen');rerender();}
+    else{t.dataset.sure='1';t.textContent='Säker?';setTimeout(()=>{if(t.isConnected){delete t.dataset.sure;t.textContent='Ta bort'}},3000);}return;}
+  if(t.id==='tplcopy'){const c=clone(cfg);delete c.pin;const txt=JSON.stringify(c);
+    navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(txt).then(()=>toast('Inställningarna är kopierade')).catch(()=>{const a=document.getElementById('tpltext');a.value=txt;a.select();toast('Markerad i rutan nedan. Kopiera den därifrån.');})
+      :(()=>{const a=document.getElementById('tpltext');a.value=txt;a.select();toast('Markerad i rutan nedan. Kopiera den därifrån.');})();return;}
+  if(t.id==='tplpaste'){const a=document.getElementById('tpltext');let p=null;try{p=JSON.parse(a.value)}catch(err){}
+    if(!p||!Array.isArray(p.outputs)||p.outputs.length!==5){toast('Texten känns inte igen som inställningar för centralen');return;}
+    const pin=cfg.pin;cfg=Object.assign(p,{pin});save();toast('Inställningarna är inlästa');rerender();return;}
+});
+/* kort och långt tryck på simulatorns knappar */
+const PRESS='[data-press]';
+view.addEventListener('pointerdown',e=>{const t=e.target.closest&&e.target.closest(PRESS);if(!t)return;
+  const B=sim.btns[t.dataset.press];B.p=true;B.t=0;B.id++;t.classList.add('down');});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>view.addEventListener(ev,e=>{const t=e.target.closest&&e.target.closest(PRESS);if(!t)return;
+  const n=t.dataset.press,B=sim.btns[n];if(!B.p)return;
+  B.p=false;t.classList.remove('down');
+  if(ev==='pointerup'){B.rel=B.t;
+    if(!cfg.outputs.some((o,i)=>o.trig==='btn'&&String(btnNo(o,i))===n))toast('Ingen utgång styrs av tryckknapp '+n+'. Välj det i installatörsläget.');}}));
+view.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest(PRESS))e.preventDefault();});
+
+view.addEventListener('input',e=>{const el=e.target;
+  if(el.id==='vslider'){sim.v=+el.value;document.getElementById('simv').textContent=fmtV(sim.v);hdr();return;}
+  if(el.dataset.load!==undefined){const v=num(el.value);if(v>=0)sim.load[+el.dataset.load]=v;return;}
+  if(el.dataset.f==='name'){cfg.outputs[+el.dataset.i].name=el.value;save();}
+});
+view.addEventListener('change',e=>{const el=e.target;
+  if(el.id==='prof'){cfg.profile=el.value;save();hdr();return;}
+  if(el.id==='mwork'||el.id==='mroad'){cfg.modes=cfg.modes||{};cfg.modes[el.id==='mwork'?'work':'road']=el.value.trim();save();rerender();return;}
+  const f=el.dataset.f;if(!f)return;const o=cfg.outputs[+el.dataset.i];
+  if(el.type==='checkbox')o[f]=el.checked;
+  else if(f==='prio'||f==='btn')o[f]=+el.value;
+  else if(f==='time'||f==='cut')o[f]=Math.max(0,num(el.value)||0);
+  else if(f==='holdT')o[f]=Math.max(0.3,num(el.value)||1);
+  else if(f==='holdBlink')o[f]=Math.max(0.1,num(el.value)||0.5);
+  else if(f==='ignT')o[f]=Math.max(1,Math.round(num(el.value))||120);
+  else if(f==='schDur')o[f]=Math.max(1,Math.round(num(el.value))||30);
+  else o[f]=el.value;
+  save();rerender();
+});
+
+let last=performance.now(),acc=0;
+function loop(now){const dt=Math.min(.25,(now-last)/1000);last=now;acc+=dt;
+  if(!real()) tick(dt); // simulatorn står still medan en central är vald
+  // ingen status på STALE_MS fast vi tror att vi är anslutna: bryt, så tar återanslutningen över
+  else if(conn.state==='connected'&&cen&&Date.now()-cen.t>STALE_MS){try{conn.dev.gatt.disconnect()}catch(e){} onGattLost();}
+  if(tab==='out'||tab==='inst')live(); else if(tab==='status'&&acc>.5){acc=0;live();}
+  requestAnimationFrame(loop);}
+log('Appen startad mot simulatorn');
+tick(0);render();requestAnimationFrame(loop);
+resume();
+if('serviceWorker' in navigator&&location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+})();
+</script>
+
+</body></html>
